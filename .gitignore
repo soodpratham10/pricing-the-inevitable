@@ -21,7 +21,6 @@ reference/
 # Rendered reports and the pkgdown build
 report/*_files/
 report/*.html
-report/*.pdf
 pkgdown-site/
 
 # Python

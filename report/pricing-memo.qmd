@@ -1,0 +1,154 @@
+---
+title: "Pricing the Inevitable"
+subtitle: "A pricing memo: what a premium hides"
+author: "Pratham Sood"
+date: today
+format:
+  html:
+    embed-resources: true
+    toc: true
+    theme: flatly
+  typst:
+    toc: true
+    papersize: us-letter
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(inevitable)
+m <- mortality_law()
+i <- 0.045
+S <- 250000
+q40 <- q_path(m, 40)
+P <- net_premium("whole_life", q40, i, S)
+# "\\$" keeps the dollar sign literal: Typst and Pandoc would otherwise read $ ... $ as maths
+dollars <- function(x, d = 2) paste0(ifelse(x < 0, "-", ""), "\\$", formatC(abs(x), format = "f", digits = d, big.mark = ","))
+pct <- function(x, d = 1) paste0(formatC(100 * x, format = "f", digits = d), "%")
+options(knitr.kable.NA = "")
+```
+
+**To:** Pricing committee, Prairie Life (a fictional insurer)\
+**From:** Pratham Sood, pricing actuary\
+**Re:** Net premiums and the risk inside them
+
+## Summary
+
+- A 40-year-old buying `r dollars(S, 0)` of whole life insurance has a net premium of **`r dollars(P)`** a year. At that price the policy still loses money with probability **`r pct(prob_loss("whole_life", q40, i, S, P))`**: everyone who dies early is a loss.
+- To be 95% sure that *one* policy does not lose money, the premium would have to be **`r dollars(percentile_premium("whole_life", q40, i, S))`**. Across *1,000* policies, the same 95% certainty needs only **`r dollars(portfolio_premium("whole_life", q40, i, S, N = 1000))`**. Pooling is what makes insurance affordable.
+- A percentile premium can mislead: for 20-year term at 40 it is **`r dollars(percentile_premium("term", q40, i, S, n = 20, t = 20))`**, because death within 20 years has a probability below 5%.
+- Life insurance and annuities hedge each other. About **`r formatC(natural_hedge(m)$ratio, format = "f", digits = 2)`** annuities of $20,000 a year per insurance policy cancel the effect of a mortality shock.
+
+*Every number in this memo is computed by the `inevitable` R package when the memo is rendered. All assumptions are illustrative and not calibrated to real data.*
+
+## 1. The pricing basis
+
+```{r basis}
+basis <- data.frame(
+  Assumption = c("Mortality", "Select period", "Interest", "Expenses and profit"),
+  Value = c("Gompertz-Makeham: mu(x) = 0.0002 + 0.000008 x 1.112^x",
+            "q x 0.70 in year 1 and x 0.85 in year 2 after underwriting",
+            "4.5% effective a year",
+            "None: these are net premiums"))
+knitr::kable(basis)
+```
+
+Under this law a 40-year-old can expect `r formatC(curtate_ex(q40), format = "f", digits = 1)` more complete years of life, and a 65-year-old `r formatC(curtate_ex(q_path(m, 65)), format = "f", digits = 1)`.
+
+## 2. The rate card
+
+Standard class, annual premium per 1,000 of benefit (DA65: per 1,000 a year of income from 65).
+
+```{r ratecard}
+rb <- rate_book(m, i = i)
+std <- rb[rb$class == "Standard" & rb$frequency == "Annual", ]
+card <- reshape(std[, c("plan", "issue_age", "premium_per_1000")], idvar = "issue_age",
+                timevar = "plan", direction = "wide")
+names(card) <- sub("premium_per_1000.", "", names(card))
+names(card)[1] <- "Issue age"
+knitr::kable(card, digits = 2, row.names = FALSE)
+```
+
+## 3. How underwriting moves the price
+
+Premium relative to Standard, at issue age 40.
+
+```{r classes}
+at40 <- rb[rb$issue_age == 40 & rb$frequency == "Annual", ]
+rel <- do.call(rbind, lapply(plans()$plan, function(p) {
+  r <- at40[at40$plan == p, ]
+  std40 <- r$premium_per_1000[r$class == "Standard"]
+  data.frame(Plan = p, Preferred = r$premium_per_1000[r$class == "Preferred"] / std40,
+             Smoker = r$premium_per_1000[r$class == "Smoker"] / std40,
+             Rated = r$premium_per_1000[r$class == "Rated"] / std40)
+}))
+knitr::kable(rel, digits = 3)
+```
+
+Two things stand out. The flat extra for the Rated class (0.005 added to the force of mortality) costs little on whole life but multiplies the price of term insurance, because term insurance is almost pure mortality cost. And smokers pay **less** for the deferred annuity: they are expected to collect it for fewer years. Insurers sell "impaired life" annuities on exactly this basis.
+
+## 4. Paying monthly
+
+Paying the same yearly premium in twelve instalments costs more, because the insurer waits longer for its money and stops collecting at death.
+
+```{r monthly}
+mo <- do.call(rbind, lapply(plans()$plan, function(p) {
+  a <- rb$premium_per_1000[rb$plan == p & rb$issue_age == 40 & rb$class == "Standard" & rb$frequency == "Annual"]
+  b <- rb$premium_per_1000[rb$plan == p & rb$issue_age == 40 & rb$class == "Standard" & rb$frequency == "Monthly"]
+  data.frame(Plan = p, Annual = a, `12 x monthly` = b, `Extra cost` = pct(b / a - 1, 2), check.names = FALSE)
+}))
+knitr::kable(mo, digits = 2)
+```
+
+The monthly premiums use the UDD m-thly annuity. Woolhouse's formula, with three terms, lands within `r formatC(abs(annuity_due_mthly(q40, i, 12, method = "woolhouse3", mu0 = mu_x(m, 40)) - annuity_due_mthly(q40, i, 12, method = "exact_cf")), format = "f", digits = 4)` of the exact constant-force value for a whole life annuity at 40.
+
+## 5. A premium is a bet
+
+At the net premium, the loss on one whole life policy depends only on when the life dies.
+
+```{r lossplot, fig.height = 4, fig.width = 7}
+ld <- loss_distribution("whole_life", q40, i, S, P)
+par(mar = c(4, 5, 1, 1))
+plot(ld$k + 40, ld$loss / 1000, type = "h", lwd = 2,
+     col = ifelse(ld$loss > 0, "#b23a48", "#2f6f8f"),
+     xlab = "Age at death", ylab = "Loss at issue ($000)")
+abline(h = 0)
+legend("topright", c("Insurer loses", "Insurer gains"), col = c("#b23a48", "#2f6f8f"), lwd = 2, bty = "n")
+```
+
+Early deaths are expensive and late deaths are profitable; on average they cancel. How much extra premium buys 95% confidence depends on how many policies share the risk:
+
+```{r portfolio}
+Ns <- c(1, 100, 1000, 10000, 100000)
+pp <- sapply(Ns, function(N) if (N == 1) percentile_premium("whole_life", q40, i, S)
+                              else portfolio_premium("whole_life", q40, i, S, N))
+knitr::kable(data.frame(Policies = formatC(as.integer(Ns), format = "d", big.mark = ","),
+                        `Premium for 95% confidence` = dollars(pp),
+                        `Above the net premium` = pct(pp / P - 1), check.names = FALSE))
+```
+
+For one policy the 95% premium is a percentile of the loss distribution; for portfolios it uses the normal approximation, which the package checks by simulating 2,000 portfolios.
+
+## 6. The natural hedge
+
+```{r hedge}
+h <- natural_hedge(m)
+shock <- c(-0.2, -0.1, 0.1, 0.2)
+tab <- data.frame(
+  `Mortality shock` = pct(shock, 0),
+  `1,000 insurance policies` = dollars(sapply(shock, function(s) block_change(m, 1000, 0, s)), 0),
+  `Hedged block` = dollars(sapply(shock, function(s) block_change(m, 1000, 1000 * h$ratio, s)), 0),
+  check.names = FALSE)
+knitr::kable(tab)
+```
+
+A heavier-mortality shock brings death benefits forward but shortens annuity payments. With `r round(1000 * h$ratio)` annuities of $20,000 a year alongside 1,000 policies of $250,000, the change in the value of the promises almost vanishes. The hedge is exact only for small shocks; larger ones leave a second-order remainder.
+
+## 7. Limitations
+
+- Net premiums only: no expenses, commission or profit margin.
+- Mortality is a single assumed law, not fitted to experience; parameter risk is not modelled.
+- Interest is a flat 4.5%; no interest-rate risk.
+- Independence between lives is assumed in the portfolio results: a pandemic would break it.
