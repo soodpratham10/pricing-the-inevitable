@@ -1,0 +1,44 @@
+url: https://soodpratham10.github.io/pricing-the-inevitable/
+destination: pkgdown-site
+
+template:
+  bootstrap: 5
+  bslib:
+    bg: "#f5efe2"
+    fg: "#2b2520"
+    primary: "#8c2f39"
+    base_font: {google: "Source Serif 4"}
+    heading_font: {google: "Special Elite"}
+    code_font: {google: "Courier Prime"}
+
+home:
+  title: Pricing the Inevitable
+
+navbar:
+  structure:
+    left: [reference]
+    right: [quotedesk, github]
+  components:
+    quotedesk:
+      text: The Quote Desk
+      href: https://soodpratham10.shinyapps.io/pricing-the-inevitable/
+
+reference:
+  - title: "Chapter 1: The Clock"
+    desc: Laws of mortality, select mortality, extra risk and fractional ages.
+    contents: [mortality_law, mu_x, tpx, q_path, kpx_from_q, curtate_pmf, curtate_ex, spx, tpx_frac, life_table]
+  - title: "Chapters 2 and 3: Paying at Death and Paying for Life"
+    desc: Nineteen insurance and annuity products, with their full distributions.
+    contents: [products, annuity_certain, pv_by_k, product_moments, epv, nEx, value_all]
+  - title: "Paying more often than once a year"
+    desc: m-thly and continuous benefits by exact sums, UDD, Woolhouse and claims acceleration.
+    contents: [nominal_rates, annuity_due, annuity_due_mthly, insurance_mthly, insurance_continuous, insurance_continuous_exact]
+  - title: "Chapter 4: The Quote"
+    desc: Premium principles and the loss at issue.
+    contents: [net_premium, net_premium_mthly, loss_distribution, prob_loss, loss_moments, percentile_premium, portfolio_premium, simulate_portfolio, refund_premium]
+  - title: "The rate book"
+    desc: Plans, underwriting classes and premiums per 1,000.
+    contents: [risk_classes, class_q_path, plans, plan_premium, rate_book]
+  - title: "The natural hedge"
+    desc: Life insurance and annuities offsetting each other.
+    contents: [shock_q, natural_hedge, block_change]
