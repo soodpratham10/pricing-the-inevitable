@@ -1,0 +1,23 @@
+Package: inevitable
+Type: Package
+Title: Risk-Based Pricing of Life Insurance and Annuities
+Version: 0.1.0
+Authors@R: person("Pratham", "Sood", email = "prathamsood1002@gmail.com",
+    role = c("aut", "cre"))
+Description: A life contingencies pricing engine built from first principles.
+    Laws of mortality, select mortality and extra risk; expected values,
+    variances and full distributions for 19 insurance and annuity products;
+    m-thly and continuous benefits by exact sums, UDD and Woolhouse;
+    net premiums by the equivalence, percentile and portfolio percentile
+    principles; premium refunds; and the natural hedge between life insurance
+    and annuities. All assumptions are illustrative and not calibrated to real
+    data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports: stats
+Suggests: testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+URL: https://github.com/soodpratham10/pricing-the-inevitable
+BugReports: https://github.com/soodpratham10/pricing-the-inevitable/issues
+Config/roxygen2/version: 8.1.1

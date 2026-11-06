@@ -1,0 +1,15 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^README\.md$
+^\.github$
+^reference$
+^docs$
+^app$
+^sql$
+^excel$
+^python$
+^report$
+^deploy\.R$
+^_pkgdown\.yml$
+^pkgdown-site$
