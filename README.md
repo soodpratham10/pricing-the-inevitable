@@ -6,6 +6,8 @@
 
 **[▶ Open The Quote Desk](https://soodpratham10.shinyapps.io/pricing-the-inevitable/)** · **[📄 Read the pricing memo](report/pricing-memo.pdf)** · **[📚 Function reference](https://soodpratham10.github.io/pricing-the-inevitable/)**
 
+[![The Quote Desk: a typed quote letter for 20-year term on a 40-year-old smoker, with the premium for 95% confidence on one policy and across 1,000](man/figures/quote-desk.png)](https://soodpratham10.shinyapps.io/pricing-the-inevitable/)
+
 ## You're at the quote desk
 
 A 40-year-old walks in and asks for $250,000 of whole life insurance. The net premium is **$2,109.46 a year**. That number is a break-even *on average*, and it hides a bet: at that price the policy still loses money **one time in three**, because everyone who dies early is a loss.
