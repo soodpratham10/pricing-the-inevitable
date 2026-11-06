@@ -13,6 +13,11 @@ memo](https://soodpratham10.github.io/pricing-the-inevitable/report/pricing-memo
 · **[📚 Function
 reference](https://soodpratham10.github.io/pricing-the-inevitable/)**
 
+[![The Quote Desk: a typed quote letter for 20-year term on a
+40-year-old smoker, with the premium for 95% confidence on one policy
+and across
+1,000](reference/figures/quote-desk.png)](https://soodpratham10.shinyapps.io/pricing-the-inevitable/)
+
 ## You’re at the quote desk
 
 A 40-year-old walks in and asks for \$250,000 of whole life insurance.
