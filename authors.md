@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/soodpratham10/pricing-the-inevitable/blob/v0.1.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/soodpratham10/pricing-the-inevitable/blob/main/DESCRIPTION)
 
 Sood P (2026). *inevitable: Risk-Based Pricing of Life Insurance and
 Annuities*. R package version 0.1.0,
